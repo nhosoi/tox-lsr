@@ -12,8 +12,8 @@ SCRIPTDIR=$(readlink -f "$(dirname "$0")")
 # Collection commands that are run when `tox -e collection`:
 role=$(basename "${TOPDIR}")
 STABLE_TAG=${2:-master}
-LSR_ROLE2COLL_NAMESPACE="${LSR_ROLE2COLL_NAMESPACE:-fedora}"
-LSR_ROLE2COLL_NAME="${LSR_ROLE2COLL_NAME:-linux_system_roles}"
+export LSR_ROLE2COLL_NAMESPACE="${LSR_ROLE2COLL_NAMESPACE:-fedora}"
+export LSR_ROLE2COLL_NAME="${LSR_ROLE2COLL_NAME:-linux_system_roles}"
 cd "$LSR_TOX_ENV_DIR"
 testlist="yamllint,black,flake8,shellcheck"
 # py38 - pyunit testing is not yet supported
@@ -54,10 +54,13 @@ line_length_warning tox.ini
 #export PYTHONPATH="$LSR_TOX_ENV_DIR/ansible_collections/"${LSR_ROLE2COLL_NAME}"/"${LSR_ROLE2COLL_NAME}"/plugins/modules:$LSR_TOX_ENV_DIR/ansible_collections/"${LSR_ROLE2COLL_NAME}"/"${LSR_ROLE2COLL_NAME}"/plugins/module_utils"
 tox -e "$testlist" 2>&1 | tee "$LSR_TOX_ENV_DIR"/collection.tox.out || :
 
+${SCRIPTDIR}/runansible-doc.sh; rval_adoc=$? || :
+${SCRIPTDIR}/runansible-test.sh; rval_atest=$? || :
+
 rm -rf "${LSR_TOX_ENV_DIR}"/auto-maintenance "$LSR_TOX_ENV_DIR"/ansible_collections
 cd "${TOPDIR}"
 res=$( grep "^ERROR: .*failed" "$LSR_TOX_ENV_DIR"/collection.tox.out || : )
-if [ "$res" != "" ]; then
+if [ "$res" != "" -o $rval_adoc -ne 0 -o $rval_atest -ne 0 ]; then
     lsr_error "${ME}: tox in the converted collection format failed."
     exit 1
 fi
