@@ -32,6 +32,9 @@ cd "$TOX_WORK_DIR/ansible_collections/$LSR_ROLE2COLL_NAMESPACE/$LSR_ROLE2COLL_NA
 # unit testing not working yet - will need these and more
 #export RUN_PYTEST_UNIT_DIR="$role/unit"
 #export PYTHONPATH="$MY_LSR_TOX_ENV_DIR/ansible_collections/"${LSR_ROLE2COLL_NAME}"/"${LSR_ROLE2COLL_NAME}"/plugins/modules:$MY_LSR_TOX_ENV_DIR/ansible_collections/"${LSR_ROLE2COLL_NAME}"/"${LSR_ROLE2COLL_NAME}"/plugins/module_utils"
+if [ -f .yamllint-"$role".yaml ]; then
+    mv .yamllint-"$role".yaml .yamllint.yml
+fi
 RUN_YAMLLINT_CONFIG_FILE="$LSR_CONFIGDIR/collection_yamllint.yml" \
 TOXENV="" tox --workdir "$TOXINIDIR/.tox" -e "$testlist" 2>&1 | tee "$TOX_ENV_DIR/collection.tox.out" || :
 
